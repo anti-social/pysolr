@@ -382,6 +382,7 @@ class Solr(object):
         # identify the responding server
         server_type = None
         server_string = headers.get('server', '')
+        content_type = headers.get('content-type', '')
 
         if server_string and 'jetty' in server_string.lower():
             server_type = 'jetty'
@@ -394,7 +395,30 @@ class Solr(object):
         full_html = ''
         dom_tree = None
 
-        if server_type == 'tomcat':
+        # Solr 4.0 json response
+        try:
+            data = json.loads(response)
+            error = data['error']
+            reason = error.get('msg') or error.get('trace')
+        except (ValueError, KeyError):
+            pass
+
+        if reason is None:
+            # Solr 4.0 xml response
+            try:
+                tree = ET.fromstring(response)
+                lst_nodes = tree.findall('lst')
+
+                for lst_node in lst_nodes:
+                    if lst_node.get('name') == 'error':
+                        msg_node = lst_node.find('str')
+                        if msg_node is not None and msg_node.get('name') in ('msg', 'trace'):
+                            reason = msg_node.text
+                            break
+            except SyntaxError, e:
+                pass
+
+        if reason is None and server_type == 'tomcat':
             # Tomcat doesn't produce a valid XML response
             soup = lxml.html.fromstring(response)
             body_node = soup.find('body')
@@ -427,7 +451,10 @@ class Solr(object):
                 if reason is None:
                     full_html = ET.tostring(dom_tree)
             except SyntaxError as err:
-                full_html = "%s" % response
+                pass
+
+        if reason is None and not full_html:
+            full_html = "%s" % response                
 
         full_html = full_html.replace('\n', '')
         full_html = full_html.replace('\r', '')
