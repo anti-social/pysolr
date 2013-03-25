@@ -158,6 +158,7 @@ class SolrTestCase(unittest.TestCase):
         self.assertEqual(self.default_solr.url, 'http://localhost:8983/solr/core0')
         self.assertTrue(isinstance(self.default_solr.decoder, json.JSONDecoder))
         self.assertEqual(self.default_solr.timeout, 60)
+        self.assertEqual(self.default_solr.max_get_params_length, 1023)
 
         self.assertEqual(self.solr.url, 'http://localhost:8983/solr/core0')
         self.assertTrue(isinstance(self.solr.decoder, json.JSONDecoder))
