@@ -226,11 +226,9 @@ class SolrTestCase(unittest.TestCase):
         resp_body = self.solr._update(xml_body)
         self.assertTrue('<int name="status">0</int>' in resp_body)
 
-        self.assertRaises(SolrError, self.solr._update, '<<commit />')
-        try:
-            self.solr._update('<<commit />')
-        except SolrError as e:
-            self.assertEqual(e.message, "[Reason: Unexpected character '<' (code 60) in prolog, after '<'.\n at [row,col {unknown-source}]: [1,2]]")
+        # Test incorrect update message.
+        self.assertRaisesRegexp(SolrError, "^\\[Reason: Unexpected character '<'",
+                                self.solr._update, '<<commit />')
 
     def test__extract_error(self):
         class RubbishResponse(object):
@@ -336,11 +334,9 @@ class SolrTestCase(unittest.TestCase):
         # TODO: Can't get these working in my test setup.
         # self.assertEqual(results.grouped, '')
 
-        self.assertRaises(SolrError, self.solr.search, 'test:doc')
-        try:
-            self.solr.search('test:doc')
-        except SolrError as e:
-            self.assertEqual(e.message, '[Reason: undefined field test]')
+        # Test incorrect search query.
+        self.assertRaisesRegexp(SolrError, '\\[Reason: undefined field test\\]',
+                                self.solr.search, 'test:doc')
 
     def test_get(self):
         self.assertRaises(ValueError, self.solr.get)
