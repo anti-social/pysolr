@@ -227,13 +227,15 @@ class Solr(object):
         self.timeout = timeout
         self.max_get_params_length = max_get_params_length
         self.log = self._get_log()
+        self.session = requests.Session()
+        self.session.stream = False
 
     def _get_log(self):
         return LOG
 
     def _create_full_url(self, path=''):
         if len(path):
-            return '/'.join([self.url, path.lstrip('/')])
+            return '/'.join([self.url.rstrip('/'), path.lstrip('/')])
 
         # No path? No problem.
         return self.url
@@ -253,7 +255,7 @@ class Solr(object):
         start_time = time.time()
 
         try:
-            requests_method = getattr(requests, method, 'get')
+            requests_method = getattr(self.session, method, 'get')
         except AttributeError as err:
             raise SolrError("Unable to send HTTP method '{0}.".format(method))
 
@@ -816,7 +818,7 @@ class Solr(object):
         m = force_unicode(m)
 
         end_time = time.time()
-        self.log.debug("Built add request of %s docs in %0.2f seconds.", len(docs), end_time - start_time)
+        self.log.debug("Built add request of %s docs in %0.2f seconds.", len(message), end_time - start_time)
         return self._update(m, commit=commit, waitFlush=waitFlush, waitSearcher=waitSearcher)
 
     def delete(self, id=None, q=None, commit=True, waitFlush=None, waitSearcher=None):
