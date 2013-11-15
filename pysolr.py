@@ -10,7 +10,6 @@ import requests
 import time
 import types
 import ast
-import collections
 
 try:
     # Prefer lxml, if installed.
