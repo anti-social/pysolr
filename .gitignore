@@ -3,4 +3,6 @@ dist/
 MANIFEST
 solr4
 env
+env3
 pysolr.egg-info/
+.tox
