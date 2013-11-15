@@ -803,10 +803,8 @@ class Solr(object):
 
                     if boost and key in boost:
                         attrs['boost'] = force_unicode(boost[key])
-                    if not isinstance(_values, collections.Iterable):
-                        _values = (_values, )
-                    for v in _values:
-                        _add_doc_elem(attrs, v)
+
+                    _add_doc_elem(attrs, _values)
             else:
                 attrs = {'name': key}
 
